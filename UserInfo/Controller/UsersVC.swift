@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import Kingfisher
 
-class UsersVC: UITableViewController {
+class UsersVC: UIViewController , UITableViewDelegate , UITableViewDataSource {
     
     let url = "https://raw.githubusercontent.com/iranjith4/radius-intern-mobile/master/users.json"
     var results = [Result]()
@@ -18,9 +18,33 @@ class UsersVC: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "Profiles"
+        setUpViews()
+    //    table.rowHeight = UITableView.automaticDimension
         navigationController?.navigationBar.prefersLargeTitles = true
-        tableView.register(UsersCell.self, forCellReuseIdentifier: "usersCell")
+        table.register(UsersCell.self, forCellReuseIdentifier: "usersCell")
         getData(url: url)
+    }
+    
+    var table: UITableView = {
+        let view = UITableView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        
+        return view
+    }()
+    
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 150
+    }
+    
+    func setUpViews() {
+        table.dataSource = self
+        table.delegate = self
+        view.addSubview(table)
+        
+        table.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        table.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        table.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        table.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
     }
     
     func getData(url:String) {
@@ -41,7 +65,7 @@ class UsersVC: UITableViewController {
                 let value = try decoder.decode(UserResponse?.self, from: data)
                 self.results = (value?.results)!
                 DispatchQueue.main.async {
-                    self.tableView.reloadData()
+                    self.table.reloadData()
                 }
             } catch let err {
                 Utils.showAlert(title: "Oops", message: "\(err.localizedDescription)", presenter: self)
@@ -49,23 +73,26 @@ class UsersVC: UITableViewController {
             }.resume()
     }
     
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 100
-    }
-    
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         print(results.count)
         return (results.count)
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "usersCell") as! UsersCell
         
         let user = results[indexPath.row]
         
         let firstName = ((user.name?.first!)!).capitalizingFirstLetter()
         let lastName = ((user.name?.last!)!).capitalizingFirstLetter()
-        cell.profileNameLabel.text = firstName + " " + lastName
+        //   cell.profileNameLabel.text = firstName + " " + lastName
+        if indexPath.row % 2 == 0 {
+            cell.profileNameLabel.text = "dfksjf fkdjgndfklg fkglnfdgflkdg gfkldngdf fglknfdg fld ergknlv fc"
+            
+        }else {
+            cell.profileNameLabel.text = "Hello world"
+            
+        }
         
         let imageUrl = URL(string: (user.picture?.large!)!)
         cell.profileImage.kf.setImage(with: imageUrl)
